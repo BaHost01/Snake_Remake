@@ -16,14 +16,14 @@ YELLOW = (255, 255, 102)
 WIDTH = 800
 HEIGHT = 800
 DISPLAY = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption('Snake Remake Muito Pro')
+pygame.display.set_caption('Snake Remake PRO')
 
 # Relógio do jogo
 CLOCK = pygame.time.Clock()
 
-# Tamanho da cobra e velocidade
+# Tamanho da cobra e velocidades
 SNAKE_BLOCK = 10
-SNAKE_SPEED = 15
+SNAKE_SPEED = {"easy": 10, "medium": 15, "hard": 20}
 
 # Fonte do texto
 FONT_STYLE = pygame.font.SysFont("bahnschrift", 25)
@@ -50,28 +50,16 @@ def load_sounds():
         print("Erro ao carregar os sons.")
         return None, None
 
-def handle_input(event, x1_change, y1_change, paused):
-    if event.type == pygame.KEYDOWN:
-        if event.key == pygame.K_LEFT and x1_change == 0:
-            return -SNAKE_BLOCK, 0, paused
-        elif event.key == pygame.K_RIGHT and x1_change == 0:
-            return SNAKE_BLOCK, 0, paused
-        elif event.key == pygame.K_UP and y1_change == 0:
-            return 0, -SNAKE_BLOCK, paused
-        elif event.key == pygame.K_DOWN and y1_change == 0:
-            return 0, SNAKE_BLOCK, paused
-        elif event.key == pygame.K_p:
-            paused = not paused
-    return x1_change, y1_change, paused
-
-# Menu principal
+# Menu principal com seleção de dificuldade
 def main_menu():
     menu = True
+    difficulty = "medium"
     while menu:
         DISPLAY.fill(BLACK)
-        message("Snake Remake", WHITE, [WIDTH / 3, HEIGHT / 4])
-        message("Pressione 1 para Jogar", WHITE, [WIDTH / 3, HEIGHT / 2])
+        message("Snake Remake PRO", WHITE, [WIDTH / 3, HEIGHT / 4])
+        message(f"Pressione 1 para Jogar no {difficulty.capitalize()}", WHITE, [WIDTH / 3, HEIGHT / 2])
         message("Pressione 2 para Sair", WHITE, [WIDTH / 3, HEIGHT / 2 + 30])
+        message("Pressione D para Mudar Dificuldade", YELLOW, [WIDTH / 3, HEIGHT / 2 + 60])
         pygame.display.update()
 
         for event in pygame.event.get():
@@ -80,13 +68,20 @@ def main_menu():
                 quit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_1:
-                    game_loop()
+                    game_loop(difficulty)
                 if event.key == pygame.K_2:
                     pygame.quit()
                     quit()
+                if event.key == pygame.K_d:
+                    if difficulty == "easy":
+                        difficulty = "medium"
+                    elif difficulty == "medium":
+                        difficulty = "hard"
+                    else:
+                        difficulty = "easy"
 
-# Loop do jogo principal
-def game_loop():
+# Loop do jogo principal com níveis de dificuldade
+def game_loop(difficulty):
     eat_sound, game_over_sound = load_sounds()
 
     game_over = False
@@ -105,7 +100,7 @@ def game_loop():
     while not game_over:
         while game_close:
             DISPLAY.fill(BLACK)
-            message("Game Over! Pressione C pra Continuar ou Q pra Sair", RED, [WIDTH / 6, HEIGHT / 3])
+            message("Game Over! Pressione C para Continuar ou Q para Sair", RED, [WIDTH / 6, HEIGHT / 3])
             show_score(length_of_snake - 1)
             pygame.display.update()
 
@@ -118,7 +113,7 @@ def game_loop():
                         game_over = True
                         game_close = False
                     if event.key == pygame.K_c:
-                        game_loop()
+                        game_loop(difficulty)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -162,9 +157,23 @@ def game_loop():
             if eat_sound:
                 eat_sound.play()
 
-        CLOCK.tick(SNAKE_SPEED)
+        CLOCK.tick(SNAKE_SPEED[difficulty])
 
     main_menu()
+
+def handle_input(event, x1_change, y1_change, paused):
+    if event.type == pygame.KEYDOWN:
+        if event.key == pygame.K_LEFT and x1_change == 0:
+            return -SNAKE_BLOCK, 0, paused
+        elif event.key == pygame.K_RIGHT and x1_change == 0:
+            return SNAKE_BLOCK, 0, paused
+        elif event.key == pygame.K_UP and y1_change == 0:
+            return 0, -SNAKE_BLOCK, paused
+        elif event.key == pygame.K_DOWN and y1_change == 0:
+            return 0, SNAKE_BLOCK, paused
+        elif event.key == pygame.K_p:
+            paused = not paused
+    return x1_change, y1_change, paused
 
 # Inicia o jogo
 main_menu()
